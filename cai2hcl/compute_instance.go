@@ -21,10 +21,10 @@ type ComputeInstanceConverter struct {
 }
 
 // NewComputeInstanceConverter returns an HCL converter for compute instance.
-func NewComputeInstanceConverter() *ComputeInstanceConverter {
+func NewComputeInstanceConverter(name string) Converter {
 	return &ComputeInstanceConverter{
-		name:   "google_compute_instance",
-		schema: schemaProvider.ResourcesMap["google_compute_instance"].Schema,
+		name:   name,
+		schema: schemaProvider.ResourcesMap[name].Schema,
 	}
 }
 

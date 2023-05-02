@@ -26,10 +26,10 @@ type ProjectConverter struct {
 }
 
 // NewProjectConverter returns an HCL converter for compute project.
-func NewProjectConverter() *ProjectConverter {
+func NewProjectConverter(name string) Converter {
 	return &ProjectConverter{
-		name:     "google_project",
-		schema:   schemaProvider.ResourcesMap["google_project"].Schema,
+		name:     name,
+		schema:   schemaProvider.ResourcesMap[name].Schema,
 		billings: make(map[string]string),
 	}
 }

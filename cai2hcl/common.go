@@ -6,6 +6,8 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
+type ConverterFactory func(name string) Converter
+
 // Converter interface for resources.
 type Converter interface {
 	// Convert turns assets into hcl blocks.
@@ -27,10 +29,10 @@ var converterNames = map[string]string{
 }
 
 // converterMap initializes converters by their TF resource name.
-var converterMap = map[string]Converter{
-	"google_compute_instance":        NewComputeInstanceConverter(),
-	"google_compute_forwarding_rule": NewComputeForwardingRuleConverter(),
-	"google_project":                 NewProjectConverter(),
+var converterMap = map[string]ConverterFactory{
+	"google_compute_instance":        NewComputeInstanceConverter,
+	"google_compute_forwarding_rule": NewComputeForwardingRuleConverter,
+	"google_project":                 NewProjectConverter,
 }
 
 // schemaProvider has schemas for all resources.

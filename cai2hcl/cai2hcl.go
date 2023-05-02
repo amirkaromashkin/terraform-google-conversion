@@ -38,10 +38,12 @@ func Convert(assets []*caiasset.Asset, options *Options) ([]byte, error) {
 	f := hclwrite.NewFile()
 	rootBody := f.Body()
 	for name, v := range groups {
-		converter, ok := converterMap[name]
+		converterFactory, ok := converterMap[name]
 		if !ok {
 			continue
 		}
+		converter := converterFactory(name)
+
 		items, err := converter.Convert(v)
 		if err != nil {
 			return nil, err

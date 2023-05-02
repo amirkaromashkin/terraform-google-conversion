@@ -19,10 +19,10 @@ type ComputeForwardingRuleConverter struct {
 }
 
 // NewComputeForwardingRuleConverter returns an HCL converter for compute instance.
-func NewComputeForwardingRuleConverter() *ComputeForwardingRuleConverter {
+func NewComputeForwardingRuleConverter(name string) Converter {
 	return &ComputeForwardingRuleConverter{
-		name:   "google_compute_forwarding_rule",
-		schema: schemaProvider.ResourcesMap["google_compute_forwarding_rule"].Schema,
+		name:   name,
+		schema: schemaProvider.ResourcesMap[name].Schema,
 	}
 }
 
