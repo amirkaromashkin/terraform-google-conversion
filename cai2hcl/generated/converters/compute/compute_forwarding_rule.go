@@ -1,8 +1,9 @@
-package cai2hcl
+package compute
 
 import (
 	"fmt"
 
+	"github.com/GoogleCloudPlatform/terraform-google-conversion/v2/cai2hcl/generated/converters/common"
 	"github.com/GoogleCloudPlatform/terraform-google-conversion/v2/caiasset"
 
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -19,16 +20,16 @@ type ComputeForwardingRuleConverter struct {
 }
 
 // NewComputeForwardingRuleConverter returns an HCL converter for compute instance.
-func NewComputeForwardingRuleConverter() *ComputeForwardingRuleConverter {
+func NewComputeForwardingRuleConverter(schema map[string]*tfschema.Schema, name string) common.Converter {
 	return &ComputeForwardingRuleConverter{
-		name:   "google_compute_forwarding_rule",
-		schema: schemaProvider.ResourcesMap["google_compute_forwarding_rule"].Schema,
+		name:   name,
+		schema: schema,
 	}
 }
 
 // Convert converts asset to HCL resource blocks.
-func (c *ComputeForwardingRuleConverter) Convert(assets []*caiasset.Asset) ([]*HCLResourceBlock, error) {
-	var blocks []*HCLResourceBlock
+func (c *ComputeForwardingRuleConverter) Convert(assets []*caiasset.Asset) ([]*common.HCLResourceBlock, error) {
+	var blocks []*common.HCLResourceBlock
 	for _, asset := range assets {
 		if asset == nil {
 			continue
@@ -46,13 +47,13 @@ func (c *ComputeForwardingRuleConverter) Convert(assets []*caiasset.Asset) ([]*H
 
 // Convert REST payload to JSON/
 // Ported from https://github.com/hashicorp/terraform-provider-google/blob/main/google/resource_compute_forwarding_rule.go#L351
-func (c *ComputeForwardingRuleConverter) convertResourceData(asset *caiasset.Asset) (*HCLResourceBlock, error) {
+func (c *ComputeForwardingRuleConverter) convertResourceData(asset *caiasset.Asset) (*common.HCLResourceBlock, error) {
 	if asset == nil || asset.Resource == nil || asset.Resource.Data == nil {
 		return nil, fmt.Errorf("asset resource data is nil")
 	}
 
 	var resource *compute.ForwardingRule
-	if err := decodeJSON(asset.Resource.Data, &resource); err != nil {
+	if err := common.DecodeJSON(asset.Resource.Data, &resource); err != nil {
 		return nil, err
 	}
 
@@ -78,14 +79,14 @@ func (c *ComputeForwardingRuleConverter) convertResourceData(asset *caiasset.Ass
 	}
 
 	if resource.Region != "" {
-		hcl["region"] = parseFieldValue(resource.Region, "regions")
+		hcl["region"] = common.ParseFieldValue(resource.Region, "regions")
 	}
 
-	ctyVal, err := mapToCtyValWithSchema(hcl, c.schema)
+	ctyVal, err := common.MapToCtyValWithSchema(hcl, c.schema)
 	if err != nil {
 		return nil, err
 	}
-	return &HCLResourceBlock{
+	return &common.HCLResourceBlock{
 		Labels: []string{c.name, resource.Name},
 		Value:  ctyVal,
 	}, nil
