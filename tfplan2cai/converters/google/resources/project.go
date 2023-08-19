@@ -4,27 +4,29 @@ import (
 	"fmt"
 	"strings"
 
-	transport_tpg "github.com/GoogleCloudPlatform/terraform-google-conversion/v2/tfplan2cai/converters/google/resources/transport"
+	"github.com/GoogleCloudPlatform/terraform-google-conversion/v2/tfplan2cai/converters/google/resources/cai"
+	"github.com/hashicorp/terraform-provider-google-beta/google-beta/tpgresource"
+	transport_tpg "github.com/hashicorp/terraform-provider-google-beta/google-beta/transport"
 	"google.golang.org/api/cloudbilling/v1"
 	"google.golang.org/api/cloudresourcemanager/v1"
 )
 
-func resourceConverterProject() ResourceConverter {
-	return ResourceConverter{
+func resourceConverterProject() cai.ResourceConverter {
+	return cai.ResourceConverter{
 		AssetType:         "cloudresourcemanager.googleapis.com/Project",
 		Convert:           GetProjectCaiObject,
 		MergeCreateUpdate: MergeProject,
 	}
 }
 
-func resourceConverterProjectBillingInfo() ResourceConverter {
-	return ResourceConverter{
+func resourceConverterProjectBillingInfo() cai.ResourceConverter {
+	return cai.ResourceConverter{
 		AssetType: "cloudbilling.googleapis.com/ProjectBillingInfo",
 		Convert:   GetProjectBillingInfoCaiObject,
 	}
 }
 
-func GetProjectCaiObject(d TerraformResourceData, config *transport_tpg.Config) ([]Asset, error) {
+func GetProjectCaiObject(d tpgresource.TerraformResourceData, config *transport_tpg.Config) ([]cai.Asset, error) {
 	// use project number if it's available; otherwise, fill in project id so that we
 	// keep the CAI assets apart for different uncreated projects.
 	var linkTmpl string
@@ -33,15 +35,15 @@ func GetProjectCaiObject(d TerraformResourceData, config *transport_tpg.Config) 
 	} else {
 		linkTmpl = "//cloudresourcemanager.googleapis.com/projects/{{project_id_or_project}}"
 	}
-	name, err := assetName(d, config, linkTmpl)
+	name, err := cai.AssetName(d, config, linkTmpl)
 	if err != nil {
-		return []Asset{}, err
+		return []cai.Asset{}, err
 	}
 	if obj, err := GetProjectApiObject(d, config); err == nil {
-		return []Asset{{
+		return []cai.Asset{{
 			Name: name,
 			Type: "cloudresourcemanager.googleapis.com/Project",
-			Resource: &AssetResource{
+			Resource: &cai.AssetResource{
 				Version:              "v1",
 				DiscoveryDocumentURI: "https://www.googleapis.com/discovery/v1/apis/compute/v1/rest",
 				DiscoveryName:        "Project",
@@ -49,11 +51,11 @@ func GetProjectCaiObject(d TerraformResourceData, config *transport_tpg.Config) 
 			},
 		}}, nil
 	} else {
-		return []Asset{}, err
+		return []cai.Asset{}, err
 	}
 }
 
-func GetProjectApiObject(d TerraformResourceData, config *transport_tpg.Config) (map[string]interface{}, error) {
+func GetProjectApiObject(d tpgresource.TerraformResourceData, config *transport_tpg.Config) (map[string]interface{}, error) {
 	pid := d.Get("project_id").(string)
 
 	project := &cloudresourcemanager.Project{
@@ -66,13 +68,13 @@ func GetProjectApiObject(d TerraformResourceData, config *transport_tpg.Config) 
 	}
 
 	if _, ok := d.GetOk("labels"); ok {
-		project.Labels = expandLabels(d)
+		project.Labels = tpgresource.ExpandLabels(d)
 	}
 
-	return jsonMap(project)
+	return cai.JsonMap(project)
 }
 
-func getParentResourceId(d TerraformResourceData, p *cloudresourcemanager.Project) error {
+func getParentResourceId(d tpgresource.TerraformResourceData, p *cloudresourcemanager.Project) error {
 	orgId := d.Get("org_id").(string)
 	folderId := d.Get("folder_id").(string)
 
@@ -97,7 +99,7 @@ func getParentResourceId(d TerraformResourceData, p *cloudresourcemanager.Projec
 	return nil
 }
 
-func GetProjectBillingInfoCaiObject(d TerraformResourceData, config *transport_tpg.Config) ([]Asset, error) {
+func GetProjectBillingInfoCaiObject(d tpgresource.TerraformResourceData, config *transport_tpg.Config) ([]cai.Asset, error) {
 	// use project number if it's available; otherwise, fill in project id so that we
 	// keep the CAI assets apart for different uncreated projects.
 	var linkTmpl string
@@ -106,16 +108,16 @@ func GetProjectBillingInfoCaiObject(d TerraformResourceData, config *transport_t
 	} else {
 		linkTmpl = "//cloudbilling.googleapis.com/projects/{{project_id_or_project}}/billingInfo"
 	}
-	name, err := assetName(d, config, linkTmpl)
+	name, err := cai.AssetName(d, config, linkTmpl)
 	if err != nil {
-		return []Asset{}, err
+		return []cai.Asset{}, err
 	}
 	project := strings.Split(name, "/")[4]
 	if obj, err := GetProjectBillingInfoApiObject(d, project); err == nil {
-		return []Asset{{
+		return []cai.Asset{{
 			Name: name,
 			Type: "cloudbilling.googleapis.com/ProjectBillingInfo",
-			Resource: &AssetResource{
+			Resource: &cai.AssetResource{
 				Version:              "v1",
 				DiscoveryDocumentURI: "https://www.googleapis.com/discovery/v1/apis/cloudbilling/v1/rest",
 				DiscoveryName:        "ProjectBillingInfo",
@@ -123,15 +125,15 @@ func GetProjectBillingInfoCaiObject(d TerraformResourceData, config *transport_t
 			}},
 		}, nil
 	} else {
-		return []Asset{}, err
+		return []cai.Asset{}, err
 	}
 }
 
-func GetProjectBillingInfoApiObject(d TerraformResourceData, project string) (map[string]interface{}, error) {
+func GetProjectBillingInfoApiObject(d tpgresource.TerraformResourceData, project string) (map[string]interface{}, error) {
 	if _, ok := d.GetOk("billing_account"); !ok {
 		// TODO: If the project already exists, we could ask the API about it's
 		// billing info here.
-		return nil, ErrNoConversion
+		return nil, cai.ErrNoConversion
 	}
 
 	ba := &cloudbilling.ProjectBillingInfo{
@@ -140,10 +142,10 @@ func GetProjectBillingInfoApiObject(d TerraformResourceData, project string) (ma
 		ProjectId:          d.Get("project_id").(string),
 	}
 
-	return jsonMap(ba)
+	return cai.JsonMap(ba)
 }
 
-func MergeProject(existing, incoming Asset) Asset {
+func MergeProject(existing, incoming cai.Asset) cai.Asset {
 	existing.Resource = incoming.Resource
 	return existing
 }

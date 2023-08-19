@@ -3,19 +3,21 @@ package google
 import (
 	"fmt"
 
-	transport_tpg "github.com/GoogleCloudPlatform/terraform-google-conversion/v2/tfplan2cai/converters/google/resources/transport"
+	"github.com/GoogleCloudPlatform/terraform-google-conversion/v2/tfplan2cai/converters/google/resources/cai"
+	"github.com/hashicorp/terraform-provider-google-beta/google-beta/tpgresource"
+	transport_tpg "github.com/hashicorp/terraform-provider-google-beta/google-beta/transport"
 )
 
-func resourceConverterFolderIamPolicy() ResourceConverter {
-	return ResourceConverter{
+func resourceConverterFolderIamPolicy() cai.ResourceConverter {
+	return cai.ResourceConverter{
 		AssetType:         "cloudresourcemanager.googleapis.com/Folder",
 		Convert:           GetFolderIamPolicyCaiObject,
 		MergeCreateUpdate: MergeFolderIamPolicy,
 	}
 }
 
-func resourceConverterFolderIamBinding() ResourceConverter {
-	return ResourceConverter{
+func resourceConverterFolderIamBinding() cai.ResourceConverter {
+	return cai.ResourceConverter{
 		AssetType:         "cloudresourcemanager.googleapis.com/Folder",
 		Convert:           GetFolderIamBindingCaiObject,
 		FetchFullResource: FetchFolderIamPolicy,
@@ -24,8 +26,8 @@ func resourceConverterFolderIamBinding() ResourceConverter {
 	}
 }
 
-func resourceConverterFolderIamMember() ResourceConverter {
-	return ResourceConverter{
+func resourceConverterFolderIamMember() cai.ResourceConverter {
+	return cai.ResourceConverter{
 		AssetType:         "cloudresourcemanager.googleapis.com/Folder",
 		Convert:           GetFolderIamMemberCaiObject,
 		FetchFullResource: FetchFolderIamPolicy,
@@ -34,70 +36,70 @@ func resourceConverterFolderIamMember() ResourceConverter {
 	}
 }
 
-func GetFolderIamPolicyCaiObject(d TerraformResourceData, config *transport_tpg.Config) ([]Asset, error) {
-	return newFolderIamAsset(d, config, expandIamPolicyBindings)
+func GetFolderIamPolicyCaiObject(d tpgresource.TerraformResourceData, config *transport_tpg.Config) ([]cai.Asset, error) {
+	return newFolderIamAsset(d, config, cai.ExpandIamPolicyBindings)
 }
 
-func GetFolderIamBindingCaiObject(d TerraformResourceData, config *transport_tpg.Config) ([]Asset, error) {
-	return newFolderIamAsset(d, config, expandIamRoleBindings)
+func GetFolderIamBindingCaiObject(d tpgresource.TerraformResourceData, config *transport_tpg.Config) ([]cai.Asset, error) {
+	return newFolderIamAsset(d, config, cai.ExpandIamRoleBindings)
 }
 
-func GetFolderIamMemberCaiObject(d TerraformResourceData, config *transport_tpg.Config) ([]Asset, error) {
-	return newFolderIamAsset(d, config, expandIamMemberBindings)
+func GetFolderIamMemberCaiObject(d tpgresource.TerraformResourceData, config *transport_tpg.Config) ([]cai.Asset, error) {
+	return newFolderIamAsset(d, config, cai.ExpandIamMemberBindings)
 }
 
-func MergeFolderIamPolicy(existing, incoming Asset) Asset {
+func MergeFolderIamPolicy(existing, incoming cai.Asset) cai.Asset {
 	existing.IAMPolicy = incoming.IAMPolicy
 	return existing
 }
 
-func MergeFolderIamBinding(existing, incoming Asset) Asset {
-	return mergeIamAssets(existing, incoming, mergeAuthoritativeBindings)
+func MergeFolderIamBinding(existing, incoming cai.Asset) cai.Asset {
+	return cai.MergeIamAssets(existing, incoming, cai.MergeAuthoritativeBindings)
 }
 
-func MergeFolderIamBindingDelete(existing, incoming Asset) Asset {
-	return mergeDeleteIamAssets(existing, incoming, mergeDeleteAuthoritativeBindings)
+func MergeFolderIamBindingDelete(existing, incoming cai.Asset) cai.Asset {
+	return cai.MergeDeleteIamAssets(existing, incoming, cai.MergeDeleteAuthoritativeBindings)
 }
 
-func MergeFolderIamMember(existing, incoming Asset) Asset {
-	return mergeIamAssets(existing, incoming, mergeAdditiveBindings)
+func MergeFolderIamMember(existing, incoming cai.Asset) cai.Asset {
+	return cai.MergeIamAssets(existing, incoming, cai.MergeAdditiveBindings)
 }
 
-func MergeFolderIamMemberDelete(existing, incoming Asset) Asset {
-	return mergeDeleteIamAssets(existing, incoming, mergeDeleteAdditiveBindings)
+func MergeFolderIamMemberDelete(existing, incoming cai.Asset) cai.Asset {
+	return cai.MergeDeleteIamAssets(existing, incoming, cai.MergeDeleteAdditiveBindings)
 }
 
 func newFolderIamAsset(
-	d TerraformResourceData,
+	d tpgresource.TerraformResourceData,
 	config *transport_tpg.Config,
-	expandBindings func(d TerraformResourceData) ([]IAMBinding, error),
-) ([]Asset, error) {
+	expandBindings func(d tpgresource.TerraformResourceData) ([]cai.IAMBinding, error),
+) ([]cai.Asset, error) {
 	bindings, err := expandBindings(d)
 	if err != nil {
-		return []Asset{}, fmt.Errorf("expanding bindings: %v", err)
+		return []cai.Asset{}, fmt.Errorf("expanding bindings: %v", err)
 	}
 
 	// The "folder" argument is of the form "folders/12345"
-	name, err := assetName(d, config, "//cloudresourcemanager.googleapis.com/{{folder}}")
+	name, err := cai.AssetName(d, config, "//cloudresourcemanager.googleapis.com/{{folder}}")
 	if err != nil {
-		return []Asset{}, err
+		return []cai.Asset{}, err
 	}
 
-	return []Asset{{
+	return []cai.Asset{{
 		Name: name,
 		Type: "cloudresourcemanager.googleapis.com/Folder",
-		IAMPolicy: &IAMPolicy{
+		IAMPolicy: &cai.IAMPolicy{
 			Bindings: bindings,
 		},
 	}}, nil
 }
 
-func FetchFolderIamPolicy(d TerraformResourceData, config *transport_tpg.Config) (Asset, error) {
+func FetchFolderIamPolicy(d tpgresource.TerraformResourceData, config *transport_tpg.Config) (cai.Asset, error) {
 	if _, ok := d.GetOk("folder"); !ok {
-		return Asset{}, ErrEmptyIdentityField
+		return cai.Asset{}, cai.ErrEmptyIdentityField
 	}
 
-	return fetchIamPolicy(
+	return cai.FetchIamPolicy(
 		NewFolderIamUpdater,
 		d,
 		config,

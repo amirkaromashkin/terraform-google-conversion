@@ -3,19 +3,21 @@ package google
 import (
 	"fmt"
 
-	transport_tpg "github.com/GoogleCloudPlatform/terraform-google-conversion/v2/tfplan2cai/converters/google/resources/transport"
+	"github.com/GoogleCloudPlatform/terraform-google-conversion/v2/tfplan2cai/converters/google/resources/cai"
+	"github.com/hashicorp/terraform-provider-google-beta/google-beta/tpgresource"
+	transport_tpg "github.com/hashicorp/terraform-provider-google-beta/google-beta/transport"
 )
 
-func resourceConverterProjectIamPolicy() ResourceConverter {
-	return ResourceConverter{
+func resourceConverterProjectIamPolicy() cai.ResourceConverter {
+	return cai.ResourceConverter{
 		AssetType:         "cloudresourcemanager.googleapis.com/Project",
 		Convert:           GetProjectIamPolicyCaiObject,
 		MergeCreateUpdate: MergeProjectIamPolicy,
 	}
 }
 
-func resourceConverterProjectIamBinding() ResourceConverter {
-	return ResourceConverter{
+func resourceConverterProjectIamBinding() cai.ResourceConverter {
+	return cai.ResourceConverter{
 		AssetType:         "cloudresourcemanager.googleapis.com/Project",
 		Convert:           GetProjectIamBindingCaiObject,
 		FetchFullResource: FetchProjectIamPolicy,
@@ -24,8 +26,8 @@ func resourceConverterProjectIamBinding() ResourceConverter {
 	}
 }
 
-func resourceConverterProjectIamMember() ResourceConverter {
-	return ResourceConverter{
+func resourceConverterProjectIamMember() cai.ResourceConverter {
+	return cai.ResourceConverter{
 		AssetType:         "cloudresourcemanager.googleapis.com/Project",
 		Convert:           GetProjectIamMemberCaiObject,
 		FetchFullResource: FetchProjectIamPolicy,
@@ -34,72 +36,72 @@ func resourceConverterProjectIamMember() ResourceConverter {
 	}
 }
 
-func GetProjectIamPolicyCaiObject(d TerraformResourceData, config *transport_tpg.Config) ([]Asset, error) {
-	return newProjectIamAsset(d, config, expandIamPolicyBindings)
+func GetProjectIamPolicyCaiObject(d tpgresource.TerraformResourceData, config *transport_tpg.Config) ([]cai.Asset, error) {
+	return newProjectIamAsset(d, config, cai.ExpandIamPolicyBindings)
 }
 
-func GetProjectIamBindingCaiObject(d TerraformResourceData, config *transport_tpg.Config) ([]Asset, error) {
-	return newProjectIamAsset(d, config, expandIamRoleBindings)
+func GetProjectIamBindingCaiObject(d tpgresource.TerraformResourceData, config *transport_tpg.Config) ([]cai.Asset, error) {
+	return newProjectIamAsset(d, config, cai.ExpandIamRoleBindings)
 }
 
-func GetProjectIamMemberCaiObject(d TerraformResourceData, config *transport_tpg.Config) ([]Asset, error) {
-	return newProjectIamAsset(d, config, expandIamMemberBindings)
+func GetProjectIamMemberCaiObject(d tpgresource.TerraformResourceData, config *transport_tpg.Config) ([]cai.Asset, error) {
+	return newProjectIamAsset(d, config, cai.ExpandIamMemberBindings)
 }
 
-func MergeProjectIamPolicy(existing, incoming Asset) Asset {
+func MergeProjectIamPolicy(existing, incoming cai.Asset) cai.Asset {
 	existing.IAMPolicy = incoming.IAMPolicy
 	return existing
 }
 
-func MergeProjectIamBinding(existing, incoming Asset) Asset {
-	return mergeIamAssets(existing, incoming, mergeAuthoritativeBindings)
+func MergeProjectIamBinding(existing, incoming cai.Asset) cai.Asset {
+	return cai.MergeIamAssets(existing, incoming, cai.MergeAuthoritativeBindings)
 }
 
-func MergeProjectIamBindingDelete(existing, incoming Asset) Asset {
-	return mergeDeleteIamAssets(existing, incoming, mergeDeleteAuthoritativeBindings)
+func MergeProjectIamBindingDelete(existing, incoming cai.Asset) cai.Asset {
+	return cai.MergeDeleteIamAssets(existing, incoming, cai.MergeDeleteAuthoritativeBindings)
 }
 
-func MergeProjectIamMember(existing, incoming Asset) Asset {
-	return mergeIamAssets(existing, incoming, mergeAdditiveBindings)
+func MergeProjectIamMember(existing, incoming cai.Asset) cai.Asset {
+	return cai.MergeIamAssets(existing, incoming, cai.MergeAdditiveBindings)
 }
 
-func MergeProjectIamMemberDelete(existing, incoming Asset) Asset {
-	return mergeDeleteIamAssets(existing, incoming, mergeDeleteAdditiveBindings)
+func MergeProjectIamMemberDelete(existing, incoming cai.Asset) cai.Asset {
+	return cai.MergeDeleteIamAssets(existing, incoming, cai.MergeDeleteAdditiveBindings)
 }
 
 func newProjectIamAsset(
-	d TerraformResourceData,
+	d tpgresource.TerraformResourceData,
 	config *transport_tpg.Config,
-	expandBindings func(d TerraformResourceData) ([]IAMBinding, error),
-) ([]Asset, error) {
+	expandBindings func(d tpgresource.TerraformResourceData) ([]cai.IAMBinding, error),
+) ([]cai.Asset, error) {
 	bindings, err := expandBindings(d)
 	if err != nil {
-		return []Asset{}, fmt.Errorf("expanding bindings: %v", err)
+		return []cai.Asset{}, fmt.Errorf("expanding bindings: %v", err)
 	}
 
 	// Ideally we should use project_number, but since that is generated server-side,
 	// we substitute project_id.
-	name, err := assetName(d, config, "//cloudresourcemanager.googleapis.com/projects/{{project}}")
+	name, err := cai.AssetName(d, config, "//cloudresourcemanager.googleapis.com/projects/{{project}}")
 	if err != nil {
-		return []Asset{}, err
+		return []cai.Asset{}, err
 	}
 
-	return []Asset{{
+	return []cai.Asset{{
 		Name: name,
 		Type: "cloudresourcemanager.googleapis.com/Project",
-		IAMPolicy: &IAMPolicy{
+		IAMPolicy: &cai.IAMPolicy{
 			Bindings: bindings,
 		},
 	}}, nil
 }
 
-func FetchProjectIamPolicy(d TerraformResourceData, config *transport_tpg.Config) (Asset, error) {
+func FetchProjectIamPolicy(d tpgresource.TerraformResourceData, config *transport_tpg.Config) (cai.Asset, error) {
 	if _, ok := d.GetOk("project"); !ok {
-		return Asset{}, ErrEmptyIdentityField
+		return cai.Asset{}, cai.ErrEmptyIdentityField
 	}
 
 	// We use project_id in the asset name template to be consistent with newProjectIamAsset.
-	return fetchIamPolicy(
+	return cai.FetchIamPolicy(
 		NewProjectIamUpdater,
 		d,
 		config,

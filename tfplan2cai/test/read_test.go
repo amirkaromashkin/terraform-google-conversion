@@ -2,14 +2,13 @@ package test
 
 import (
 	"context"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/GoogleCloudPlatform/terraform-google-conversion/v2/tfplan2cai"
-	"github.com/stretchr/testify/require"
+	"github.com/google/go-cmp/cmp"
 	"go.uber.org/zap/zaptest"
 )
 
@@ -131,7 +130,7 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 			// Create a temporary directory for running terraform.
-			dir, err := ioutil.TempDir(tmpDir, "terraform")
+			dir, err := os.MkdirTemp(tmpDir, "terraform")
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -153,7 +152,7 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 				data.Provider["project"]: data.Ancestry,
 			}
 
-			jsonPlan, err := ioutil.ReadFile(planfile)
+			jsonPlan, err := os.ReadFile(planfile)
 			if err != nil {
 				t.Fatalf("Error parsing %s: %s", f, err)
 			}
@@ -172,7 +171,9 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 			}
 			expectedAssets := normalizeAssets(t, want, true)
 			actualAssets := normalizeAssets(t, got, true)
-			require.ElementsMatch(t, actualAssets, expectedAssets)
+			if diff := cmp.Diff(expectedAssets, actualAssets); diff != "" {
+				t.Errorf("%v diff(-want, +got):\n%s", t.Name(), diff)
+			}
 		})
 	}
 }
@@ -191,7 +192,7 @@ func TestReadPlannedAssetsCoverage_WithoutDefaultProject(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 			// Create a temporary directory for running terraform.
-			dir, err := ioutil.TempDir(tmpDir, "terraform")
+			dir, err := os.MkdirTemp(tmpDir, "terraform")
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -213,7 +214,7 @@ func TestReadPlannedAssetsCoverage_WithoutDefaultProject(t *testing.T) {
 				// data.Provider["project"]: data.Ancestry,
 			}
 
-			jsonPlan, err := ioutil.ReadFile(planfile)
+			jsonPlan, err := os.ReadFile(planfile)
 			if err != nil {
 				t.Fatalf("Error parsing %s: %s", f, err)
 			}
@@ -232,7 +233,9 @@ func TestReadPlannedAssetsCoverage_WithoutDefaultProject(t *testing.T) {
 			}
 			expectedAssets := normalizeAssets(t, want, true)
 			actualAssets := normalizeAssets(t, got, true)
-			require.ElementsMatch(t, actualAssets, expectedAssets)
+			if diff := cmp.Diff(expectedAssets, actualAssets); diff != "" {
+				t.Errorf("%v diff(-want, +got):\n%s", t.Name(), diff)
+			}
 		})
 	}
 }

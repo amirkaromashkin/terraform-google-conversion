@@ -5,25 +5,28 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"net/http/httptest"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 
 	"github.com/GoogleCloudPlatform/terraform-google-conversion/v2/caiasset"
 	"github.com/GoogleCloudPlatform/terraform-google-conversion/v2/tfplan2cai"
+	"github.com/google/go-cmp/cmp"
+	transport_tpg "github.com/hashicorp/terraform-provider-google-beta/google-beta/transport"
 	"go.uber.org/zap/zaptest"
-
-	"github.com/stretchr/testify/require"
 )
 
 func defaultCompareConverterOutput(t *testing.T, expected []caiasset.Asset, actual []caiasset.Asset, offline bool) {
 	expectedAssets := normalizeAssets(t, expected, offline)
 	actualAssets := normalizeAssets(t, actual, offline)
-	require.ElementsMatch(t, expectedAssets, actualAssets)
+	if diff := cmp.Diff(expectedAssets, actualAssets); diff != "" {
+		t.Errorf("%v diff(-want, +got):\n%s", t.Name(), diff)
+	}
 }
 
 func testConvertCommand(t *testing.T, dir, tfplanName string, jsonName string, offline bool, withProject bool, compare compareConvertOutputFunc) {
@@ -86,7 +89,7 @@ func saveFile(t *testing.T, dir, filename string, payload []byte) {
 }
 
 func tfvConvert(t *testing.T, dir, tfPlanFile string, offline bool, withProject bool) []caiasset.Asset {
-	jsonPlan, err := ioutil.ReadFile(filepath.Join(dir, tfPlanFile))
+	jsonPlan, err := os.ReadFile(filepath.Join(dir, tfPlanFile))
 	if err != nil {
 		t.Fatalf("Error parsing %s: %s", tfPlanFile, err)
 	}
@@ -196,4 +199,27 @@ func getTestPrefix() string {
 	}
 
 `, data.Provider["version"], credentials)
+}
+
+// newTestConfig create a config using the http test server.
+func newTestConfig(server *httptest.Server) *transport_tpg.Config {
+	cfg := &transport_tpg.Config{}
+	cfg.Client = server.Client()
+	configureTestBasePaths(cfg, server.URL)
+	return cfg
+}
+
+func configureTestBasePaths(c *transport_tpg.Config, url string) {
+	if !strings.HasSuffix(url, "/") {
+		url = url + "/"
+	}
+	typ := reflect.ValueOf(c).Elem().Type()
+	val := reflect.ValueOf(c).Elem()
+
+	for i := 0; i < typ.NumField(); i++ {
+		name := typ.Field(i).Name
+		if strings.HasSuffix(name, "BasePath") {
+			val.Field(i).SetString(url)
+		}
+	}
 }

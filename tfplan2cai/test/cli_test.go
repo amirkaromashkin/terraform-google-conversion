@@ -16,15 +16,13 @@ package test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/GoogleCloudPlatform/terraform-google-conversion/v2/caiasset"
+	"github.com/google/go-cmp/cmp"
 )
 
 // TestCLI tests the "convert" and "validate" subcommand against a generated .tfplan file.
@@ -40,7 +38,7 @@ func TestCLI(t *testing.T) {
 		compareConvertOutput compareConvertOutputFunc
 	}{
 		// cli-only, the following tests are not in read_test or
-		// have unique paramters that separate them
+		// have unique parameters that separate them
 		{name: "bucket"},
 		{name: "disk"},
 		{name: "firewall"},
@@ -157,8 +155,8 @@ func TestCLI(t *testing.T) {
 
 	// Map of cases to skip to reasons for the skip
 	skipCases := map[string]string{
-		"TestCLI/v=0.12/tf=example_compute_forwarding_rule/offline=true/cmd=convert":                              "temperarily skip because of the predictable drift in offline mode",
-		"TestCLI/v=0.12/tf=example_compute_forwarding_rule/offline=true/cmd=validate/constraint=always_violate":   "temperarily skip because of the predictable drift in offline mode",
+		"TestCLI/v=0.12/tf=example_compute_forwarding_rule/offline=true/cmd=convert":                              "temporarily skip because of the predictable drift in offline mode",
+		"TestCLI/v=0.12/tf=example_compute_forwarding_rule/offline=true/cmd=validate/constraint=always_violate":   "temporarily skip because of the predictable drift in offline mode",
 		"TestCLI/v=0.12/tf=example_compute_instance/offline=true/cmd=convert":                                     "compute_instance doesn't work in offline mode - github.com/hashicorp/terraform-provider-google/issues/8489",
 		"TestCLI/v=0.12/tf=example_compute_instance/offline=true/cmd=validate/constraint=always_violate":          "compute_instance doesn't work in offline mode - github.com/hashicorp/terraform-provider-google/issues/8489",
 		"TestCLI/v=0.12/tf=example_organization_iam_binding/offline=false/cmd=convert":                            "skip because test runner doesn't have org permissions",
@@ -184,7 +182,7 @@ func TestCLI(t *testing.T) {
 			t.Run(fmt.Sprintf("v=0.12/tf=%s/offline=%t", c.name, offline), func(t *testing.T) {
 				t.Parallel()
 				// Create a temporary directory for running terraform.
-				dir, err := ioutil.TempDir(tmpDir, "terraform")
+				dir, err := os.MkdirTemp(tmpDir, "terraform")
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -256,7 +254,7 @@ func TestCLIWithoutProject(t *testing.T) {
 			t.Run(fmt.Sprintf("v=0.12/tf=%s/offline=%t", c.name, offline), func(t *testing.T) {
 				t.Parallel()
 				// Create a temporary directory for running terraform.
-				dir, err := ioutil.TempDir(tmpDir, "terraform")
+				dir, err := os.MkdirTemp(tmpDir, "terraform")
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -298,7 +296,9 @@ type compareConvertOutputFunc func(t *testing.T, expected []caiasset.Asset, actu
 func compareUnmergedConvertOutput(t *testing.T, expected []caiasset.Asset, actual []caiasset.Asset, offline bool) {
 	expectedAssets := normalizeAssets(t, expected, offline)
 	actualAssets := normalizeAssets(t, actual, offline)
-	require.ElementsMatch(t, expectedAssets, actualAssets)
+	if diff := cmp.Diff(expectedAssets, actualAssets); diff != "" {
+		t.Errorf("%v diff(-want, +got):\n%s", t.Name(), diff)
+	}
 }
 
 // For merged IAM members, only consider whether the expected members are present.
@@ -339,7 +339,9 @@ func compareMergedIamMemberOutput(t *testing.T, expected []caiasset.Asset, actua
 
 	expectedAssets := normalizeAssets(t, expected, offline)
 	actualAssets := normalizeAssets(t, normalizedActual, offline)
-	require.ElementsMatch(t, expectedAssets, actualAssets)
+	if diff := cmp.Diff(expectedAssets, actualAssets); diff != "" {
+		t.Errorf("%v diff(-want, +got):\n%s", t.Name(), diff)
+	}
 }
 
 // For merged IAM bindings, only consider whether the expected bindings are as expected.
@@ -369,5 +371,7 @@ func compareMergedIamBindingOutput(t *testing.T, expected []caiasset.Asset, actu
 
 	expectedAssets := normalizeAssets(t, expected, offline)
 	actualAssets := normalizeAssets(t, normalizedActual, offline)
-	require.ElementsMatch(t, expectedAssets, actualAssets)
+	if diff := cmp.Diff(expectedAssets, actualAssets); diff != "" {
+		t.Errorf("%v diff(-want, +got):\n%s", t.Name(), diff)
+	}
 }

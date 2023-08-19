@@ -3,11 +3,11 @@ package test
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 	"testing"
 	"text/template"
@@ -156,8 +156,24 @@ func normalizeAssets(t *testing.T, assets []caiasset.Asset, offline bool) []caia
 				asset.Resource.Data["name"] = re.ReplaceAllString(name, "/placeholder-foobar")
 			}
 		}
+		// skip comparing version, DiscoveryDocumentURI,
+		// since switching to beta generates version difference
+		if asset.Resource != nil {
+			asset.Resource.Version = ""
+			asset.Resource.DiscoveryDocumentURI = ""
+		}
 		ret[i] = asset
 	}
+	sort.Slice(ret, func(i, j int) bool {
+		if ret[i].Name == ret[j].Name {
+			if ret[i].Resource != nil && ret[j].Resource == nil {
+				return true
+			} else {
+				return false
+			}
+		}
+		return ret[i].Name < ret[j].Name
+	})
 	return ret
 }
 
@@ -193,7 +209,7 @@ func formatAncestryPath(s string) string {
 }
 
 func readExpectedTestFile(f string) ([]caiasset.Asset, error) {
-	payload, err := ioutil.ReadFile(f)
+	payload, err := os.ReadFile(f)
 	if err != nil {
 		return nil, fmt.Errorf("cannot open %s, got: %s", f, err)
 	}

@@ -4,53 +4,55 @@ import (
 	"fmt"
 	"strings"
 
-	transport_tpg "github.com/GoogleCloudPlatform/terraform-google-conversion/v2/tfplan2cai/converters/google/resources/transport"
+	"github.com/GoogleCloudPlatform/terraform-google-conversion/v2/tfplan2cai/converters/google/resources/cai"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-provider-google-beta/google-beta/tpgresource"
+	transport_tpg "github.com/hashicorp/terraform-provider-google-beta/google-beta/transport"
 )
 
-func resourceConverterProjectOrgPolicy() ResourceConverter {
-	return ResourceConverter{
+func resourceConverterProjectOrgPolicy() cai.ResourceConverter {
+	return cai.ResourceConverter{
 		AssetType:         "cloudresourcemanager.googleapis.com/Project",
 		Convert:           GetProjectOrgPolicyCaiObject,
 		MergeCreateUpdate: MergeProjectOrgPolicy,
 	}
 }
 
-func GetProjectOrgPolicyCaiObject(d TerraformResourceData, config *transport_tpg.Config) ([]Asset, error) {
-	name, err := assetName(d, config, "//cloudresourcemanager.googleapis.com/projects/{{project}}")
+func GetProjectOrgPolicyCaiObject(d tpgresource.TerraformResourceData, config *transport_tpg.Config) ([]cai.Asset, error) {
+	name, err := cai.AssetName(d, config, "//cloudresourcemanager.googleapis.com/projects/{{project}}")
 	if err != nil {
-		return []Asset{}, err
+		return []cai.Asset{}, err
 	}
 	if obj, err := GetProjectOrgPolicyApiObject(d, config); err == nil {
-		return []Asset{{
+		return []cai.Asset{{
 			Name:      name,
 			Type:      "cloudresourcemanager.googleapis.com/Project",
-			OrgPolicy: []*OrgPolicy{&obj},
+			OrgPolicy: []*cai.OrgPolicy{&obj},
 		}}, nil
 	} else {
-		return []Asset{}, err
+		return []cai.Asset{}, err
 	}
 }
 
-func MergeProjectOrgPolicy(existing, incoming Asset) Asset {
+func MergeProjectOrgPolicy(existing, incoming cai.Asset) cai.Asset {
 	existing.OrgPolicy = append(existing.OrgPolicy, incoming.OrgPolicy...)
 	return existing
 }
 
-func GetProjectOrgPolicyApiObject(d TerraformResourceData, config *transport_tpg.Config) (OrgPolicy, error) {
+func GetProjectOrgPolicyApiObject(d tpgresource.TerraformResourceData, config *transport_tpg.Config) (cai.OrgPolicy, error) {
 
 	listPolicy, err := expandListOrganizationPolicy(d.Get("list_policy").([]interface{}))
 	if err != nil {
-		return OrgPolicy{}, err
+		return cai.OrgPolicy{}, err
 	}
 
 	restoreDefault, err := expandRestoreOrganizationPolicy(d.Get("restore_policy").([]interface{}))
 	if err != nil {
-		return OrgPolicy{}, err
+		return cai.OrgPolicy{}, err
 	}
 
-	policy := OrgPolicy{
-		Constraint:     canonicalOrgPolicyConstraint(d.Get("constraint").(string)),
+	policy := cai.OrgPolicy{
+		Constraint:     CanonicalOrgPolicyConstraint(d.Get("constraint").(string)),
 		BooleanPolicy:  expandBooleanOrganizationPolicy(d.Get("boolean_policy").([]interface{})),
 		ListPolicy:     listPolicy,
 		RestoreDefault: restoreDefault,
@@ -59,7 +61,7 @@ func GetProjectOrgPolicyApiObject(d TerraformResourceData, config *transport_tpg
 	return policy, nil
 }
 
-func expandListOrganizationPolicy(configured []interface{}) (*ListPolicy, error) {
+func expandListOrganizationPolicy(configured []interface{}) (*cai.ListPolicy, error) {
 	if len(configured) == 0 || configured[0] == nil {
 		return nil, nil
 	}
@@ -80,7 +82,7 @@ func expandListOrganizationPolicy(configured []interface{}) (*ListPolicy, error)
 		if all {
 			allValues = 1
 		} else {
-			allowedValues = convertStringArr(values.List())
+			allowedValues = tpgresource.ConvertStringArr(values.List())
 		}
 	}
 
@@ -92,13 +94,13 @@ func expandListOrganizationPolicy(configured []interface{}) (*ListPolicy, error)
 		if all {
 			allValues = 0
 		} else {
-			deniedValues = convertStringArr(values.List())
+			deniedValues = tpgresource.ConvertStringArr(values.List())
 		}
 	}
 
 	listPolicy := configured[0].(map[string]interface{})
-	return &ListPolicy{
-		AllValues:         ListPolicyAllValues(allValues),
+	return &cai.ListPolicy{
+		AllValues:         cai.ListPolicyAllValues(allValues),
 		AllowedValues:     allowedValues,
 		DeniedValues:      deniedValues,
 		SuggestedValue:    listPolicy["suggested_value"].(string),
@@ -106,7 +108,7 @@ func expandListOrganizationPolicy(configured []interface{}) (*ListPolicy, error)
 	}, nil
 }
 
-func expandRestoreOrganizationPolicy(configured []interface{}) (*RestoreDefault, error) {
+func expandRestoreOrganizationPolicy(configured []interface{}) (*cai.RestoreDefault, error) {
 	if len(configured) == 0 || configured[0] == nil {
 		return nil, nil
 	}
@@ -115,24 +117,24 @@ func expandRestoreOrganizationPolicy(configured []interface{}) (*RestoreDefault,
 	defaultValue := restoreDefaultMap["default"].(bool)
 
 	if defaultValue {
-		return &RestoreDefault{}, nil
+		return &cai.RestoreDefault{}, nil
 	}
 
-	return &RestoreDefault{}, fmt.Errorf("Invalid value for restore_policy. Expecting default = true")
+	return &cai.RestoreDefault{}, fmt.Errorf("Invalid value for restore_policy. Expecting default = true")
 }
 
-func expandBooleanOrganizationPolicy(configured []interface{}) *BooleanPolicy {
+func expandBooleanOrganizationPolicy(configured []interface{}) *cai.BooleanPolicy {
 	if len(configured) == 0 || configured[0] == nil {
 		return nil
 	}
 
 	booleanPolicy := configured[0].(map[string]interface{})
-	return &BooleanPolicy{
+	return &cai.BooleanPolicy{
 		Enforced: booleanPolicy["enforced"].(bool),
 	}
 }
 
-func canonicalOrgPolicyConstraint(constraint string) string {
+func CanonicalOrgPolicyConstraint(constraint string) string {
 	if strings.HasPrefix(constraint, "constraints/") {
 		return constraint
 	}

@@ -4,52 +4,54 @@ import (
 	"fmt"
 	"strings"
 
-	transport_tpg "github.com/GoogleCloudPlatform/terraform-google-conversion/v2/tfplan2cai/converters/google/resources/transport"
+	"github.com/GoogleCloudPlatform/terraform-google-conversion/v2/tfplan2cai/converters/google/resources/cai"
+	"github.com/hashicorp/terraform-provider-google-beta/google-beta/tpgresource"
+	transport_tpg "github.com/hashicorp/terraform-provider-google-beta/google-beta/transport"
 )
 
-func resourceConverterOrgPolicyPolicy() ResourceConverter {
-	return ResourceConverter{
+func resourceConverterOrgPolicyPolicy() cai.ResourceConverter {
+	return cai.ResourceConverter{
 		Convert:           GetV2OrgPoliciesCaiObject,
 		MergeCreateUpdate: MergeV2OrgPolicies,
 	}
 }
 
-func GetV2OrgPoliciesCaiObject(d TerraformResourceData, config *transport_tpg.Config) ([]Asset, error) {
+func GetV2OrgPoliciesCaiObject(d tpgresource.TerraformResourceData, config *transport_tpg.Config) ([]cai.Asset, error) {
 	assetNamePattern, assetType, err := getAssetNameAndTypeFromParent(d.Get("parent").(string))
 	if err != nil {
-		return []Asset{}, err
+		return []cai.Asset{}, err
 	}
 
-	name, err := assetName(d, config, assetNamePattern)
+	name, err := cai.AssetName(d, config, assetNamePattern)
 	if err != nil {
-		return []Asset{}, err
+		return []cai.Asset{}, err
 	}
 
 	if obj, err := GetV2OrgPoliciesApiObject(d, config); err == nil {
-		return []Asset{{
+		return []cai.Asset{{
 			Name:          name,
 			Type:          assetType,
-			V2OrgPolicies: []*V2OrgPolicies{&obj},
+			V2OrgPolicies: []*cai.V2OrgPolicies{&obj},
 		}}, nil
 	} else {
-		return []Asset{}, err
+		return []cai.Asset{}, err
 	}
 
 }
 
-func GetV2OrgPoliciesApiObject(d TerraformResourceData, config *transport_tpg.Config) (V2OrgPolicies, error) {
+func GetV2OrgPoliciesApiObject(d tpgresource.TerraformResourceData, config *transport_tpg.Config) (cai.V2OrgPolicies, error) {
 	spec, err := expandSpecV2OrgPolicies(d.Get("spec").([]interface{}))
 	if err != nil {
-		return V2OrgPolicies{}, err
+		return cai.V2OrgPolicies{}, err
 	}
 
-	return V2OrgPolicies{
+	return cai.V2OrgPolicies{
 		Name:       d.Get("name").(string),
 		PolicySpec: spec,
 	}, nil
 }
 
-func MergeV2OrgPolicies(existing, incoming Asset) Asset {
+func MergeV2OrgPolicies(existing, incoming cai.Asset) cai.Asset {
 	existing.Resource = incoming.Resource
 	return existing
 }
@@ -67,7 +69,7 @@ func getAssetNameAndTypeFromParent(parent string) (assetName string, assetType s
 	}
 }
 
-func expandSpecV2OrgPolicies(configured []interface{}) (*PolicySpec, error) {
+func expandSpecV2OrgPolicies(configured []interface{}) (*cai.PolicySpec, error) {
 	if len(configured) == 0 || configured[0] == nil {
 		return nil, nil
 	}
@@ -76,10 +78,10 @@ func expandSpecV2OrgPolicies(configured []interface{}) (*PolicySpec, error) {
 
 	policyRules, err := expandPolicyRulesSpec(specMap["rules"].([]interface{}))
 	if err != nil {
-		return &PolicySpec{}, err
+		return &cai.PolicySpec{}, err
 	}
 
-	return &PolicySpec{
+	return &cai.PolicySpec{
 		Etag:              specMap["etag"].(string),
 		PolicyRules:       policyRules,
 		InheritFromParent: specMap["inherit_from_parent"].(bool),
@@ -88,12 +90,12 @@ func expandSpecV2OrgPolicies(configured []interface{}) (*PolicySpec, error) {
 
 }
 
-func expandPolicyRulesSpec(configured []interface{}) ([]*PolicyRule, error) {
+func expandPolicyRulesSpec(configured []interface{}) ([]*cai.PolicyRule, error) {
 	if len(configured) == 0 || configured[0] == nil {
 		return nil, nil
 	}
 
-	var policyRules []*PolicyRule
+	var policyRules []*cai.PolicyRule
 	for i := 0; i < len(configured); i++ {
 		policyRule, err := expandPolicyRulePolicyRules(configured[i])
 		if err != nil {
@@ -106,34 +108,34 @@ func expandPolicyRulesSpec(configured []interface{}) ([]*PolicyRule, error) {
 
 }
 
-func expandPolicyRulePolicyRules(configured interface{}) (*PolicyRule, error) {
+func expandPolicyRulePolicyRules(configured interface{}) (*cai.PolicyRule, error) {
 	policyRuleMap := configured.(map[string]interface{})
 
 	values, err := expandValuesPolicyRule(policyRuleMap["values"].([]interface{}))
 	if err != nil {
-		return &PolicyRule{}, err
+		return &cai.PolicyRule{}, err
 	}
 
 	allowAll, err := convertStringToBool(policyRuleMap["allow_all"].(string))
 	if err != nil {
-		return &PolicyRule{}, err
+		return &cai.PolicyRule{}, err
 	}
 
 	denyAll, err := convertStringToBool(policyRuleMap["deny_all"].(string))
 	if err != nil {
-		return &PolicyRule{}, err
+		return &cai.PolicyRule{}, err
 	}
 
 	enforce, err := convertStringToBool(policyRuleMap["enforce"].(string))
 	if err != nil {
-		return &PolicyRule{}, err
+		return &cai.PolicyRule{}, err
 	}
 
 	condition, err := expandConditionPolicyRule(policyRuleMap["condition"].([]interface{}))
 	if err != nil {
-		return &PolicyRule{}, err
+		return &cai.PolicyRule{}, err
 	}
-	return &PolicyRule{
+	return &cai.PolicyRule{
 		Values:    values,
 		AllowAll:  allowAll,
 		DenyAll:   denyAll,
@@ -142,23 +144,23 @@ func expandPolicyRulePolicyRules(configured interface{}) (*PolicyRule, error) {
 	}, nil
 }
 
-func expandValuesPolicyRule(configured []interface{}) (*StringValues, error) {
+func expandValuesPolicyRule(configured []interface{}) (*cai.StringValues, error) {
 	if len(configured) == 0 || configured[0] == nil {
 		return nil, nil
 	}
 	valuesMap := configured[0].(map[string]interface{})
-	return &StringValues{
+	return &cai.StringValues{
 		AllowedValues: convertInterfaceToStringArray(valuesMap["allowed_values"].([]interface{})),
 		DeniedValues:  convertInterfaceToStringArray(valuesMap["denied_values"].([]interface{})),
 	}, nil
 }
 
-func expandConditionPolicyRule(configured []interface{}) (*Expr, error) {
+func expandConditionPolicyRule(configured []interface{}) (*cai.Expr, error) {
 	if len(configured) == 0 || configured[0] == nil {
 		return nil, nil
 	}
 	conditionMap := configured[0].(map[string]interface{})
-	return &Expr{
+	return &cai.Expr{
 		Expression:  conditionMap["expression"].(string),
 		Title:       conditionMap["title"].(string),
 		Description: conditionMap["description"].(string),
