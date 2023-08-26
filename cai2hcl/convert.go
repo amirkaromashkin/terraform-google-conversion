@@ -1,4 +1,3 @@
-// Package cai2hcl converts CAI assets to hcl bytes.
 package cai2hcl
 
 import (
@@ -14,12 +13,12 @@ import (
 
 // Options is a struct for options so that adding new options does not
 // require updating function signatures all along the pipe.
-type Options struct {
+type ConvertOptions struct {
 	ErrorLogger *zap.Logger
 }
 
 // Convert converts Asset into HCL.
-func Convert(assets []*caiasset.Asset, options *Options) ([]byte, error) {
+func Convert(assets []*caiasset.Asset, options *ConvertOptions) ([]byte, error) {
 	if options == nil || options.ErrorLogger == nil {
 		return nil, fmt.Errorf("logger is not initialized")
 	}
@@ -28,7 +27,7 @@ func Convert(assets []*caiasset.Asset, options *Options) ([]byte, error) {
 	// tf -> cai has 1:N mappings occasionally
 	groups := make(map[string][]*caiasset.Asset)
 	for _, asset := range assets {
-		name, ok := converterNames[asset.Type]
+		name, ok := ConverterNames[asset.Type]
 		if !ok {
 			continue
 		}
@@ -38,7 +37,7 @@ func Convert(assets []*caiasset.Asset, options *Options) ([]byte, error) {
 	f := hclwrite.NewFile()
 	rootBody := f.Body()
 	for name, v := range groups {
-		converter, ok := converterMap[name]
+		converter, ok := ConverterMap[name]
 		if !ok {
 			continue
 		}
