@@ -23,39 +23,35 @@ func TestSubsetOfFieldsMapsToCtyValue(t *testing.T) {
 }
 
 func TestMissingFieldDoesNotBreakConversion(t *testing.T) {
-	provider := tpg_provider.Provider()
-	var schema map[string]*schema.Schema = provider.ResourcesMap["google_compute_forwarding_rule"].Schema
-
+	resourceSchema := createSchema("google_compute_forwarding_rule")
 	outputMap := map[string]interface{}{
+		"name":         "fr-1",
 		"unknownField": "unknownValue",
 	}
 
-	_, err := MapToCtyValWithSchema(outputMap, schema)
-
-	assert.Nil(t, err)
-}
-
-func TestExperiment(t *testing.T) {
-	provider := tpg_provider.Provider()
-	resourceSchema := provider.ResourcesMap["google_compute_forwarding_rule"]
-
-	outputMap := map[string]interface{}{
-		"name":          "fr-1",
-		"unknown_field": "unknownValue",
-	}
-
-	val, err := MapToCtyValWithSchema(outputMap, resourceSchema.Schema)
+	val, err := MapToCtyValWithSchema(outputMap, resourceSchema)
 
 	assert.Nil(t, err)
 
 	assert.True(t, val.Type().HasAttribute("name"))
 	assert.Equal(t, "fr-1", val.GetAttr("name").AsString())
+}
 
-	// assert.False(t, val.Type().HasAttribute("unknown_field"))
+func TestWrongFieldTypeBreaksConversion(t *testing.T) {
+	resourceSchema := createSchema("google_compute_backend_service")
+	outputMap := map[string]interface{}{
+		"name":        "fr-1",
+		"description": []string{"unknownValue"}, // string is required, not array.
+	}
+
+	val, err := MapToCtyValWithSchema(outputMap, resourceSchema)
+
+	assert.True(t, val.IsNull())
+	assert.Contains(t, err.Error(), "string is required")
 }
 
 func createSchema(name string) map[string]*schema.Schema {
 	provider := tpg_provider.Provider()
 
-	return provider.ResourcesMap["google_compute_forwarding_rule"].Schema
+	return provider.ResourcesMap[name].Schema
 }

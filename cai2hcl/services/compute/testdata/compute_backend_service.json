@@ -9,7 +9,7 @@
         "discovery_name": "BackendService",
         "parent": "//cloudresourcemanager.googleapis.com/projects/myproj",
         "data": {
-          "description": "",
+          "description": "description",
           "sessionAffinity": "NONE",
           "loadBalancingScheme": "EXTERNAL_MANAGED",
           "healthChecks": [

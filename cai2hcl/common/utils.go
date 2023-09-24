@@ -131,18 +131,12 @@ func normalizeFlattenedMap(obj interface{}, resourceSchema map[string]*schema.Sc
 				continue
 			}
 
-			switch propertySchema.Type {
-			case schema.TypeMap, schema.TypeList, schema.TypeSet:
-				switch propertySchema.Elem.(type) {
-				case *schema.Resource:
-					newMapObj[key] = normalizeFlattenedMap(value, propertySchema.Elem.(*schema.Resource).Schema)
-				default:
-					newMapObj[key] = normalizeFlattenedMap(value, nil)
-				}
+			switch propertySchema.Elem.(type) {
+			case *schema.Resource:
+				newMapObj[key] = normalizeFlattenedMap(value, propertySchema.Elem.(*schema.Resource).Schema)
 			default:
 				newMapObj[key] = normalizeFlattenedMap(value, nil)
 			}
-			newMapObj[key] = normalizeFlattenedMap(value, nil)
 		}
 		return newMapObj
 	case *schema.Set:

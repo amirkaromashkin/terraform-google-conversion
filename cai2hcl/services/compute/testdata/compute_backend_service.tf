@@ -26,6 +26,7 @@ resource "google_compute_backend_service" "backend" {
 
   connection_draining_timeout_sec = 300
   creation_timestamp              = "2023-06-09T04:35:59.474-07:00"
+  description                     = "description"
   enable_cdn                      = false
   fingerprint                     = "m1r6cXyt2rI="
   health_checks                   = ["projects/cn-fe-playground/global/healthChecks/alicjab-health-check"]
