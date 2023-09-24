@@ -20,8 +20,8 @@ import (
 	cai2hcl_testing "github.com/GoogleCloudPlatform/terraform-google-conversion/v2/cai2hcl/testing"
 )
 
-func TestComputeForwardingRule(t *testing.T) {
-	testFileName := "compute_forwarding_rule"
+func TestComputeHealthCheck(t *testing.T) {
+	testFileName := "compute_health_check"
 
 	cai2hcl_testing.AssertTestFiles(
 		t,

@@ -6,17 +6,23 @@ import (
 	"github.com/GoogleCloudPlatform/terraform-google-conversion/v2/cai2hcl/services/resourcemanager"
 )
 
-var allConverterNames = []map[string]string{
-	compute.ConverterNames,
-	resourcemanager.ConverterNames,
+var allConverterNamesPerAssetType = []map[string]string{
+	compute.ConverterNamesPerAssetType,
+	resourcemanager.ConverterNamesPerAssetType,
 }
+
+var AssetNameRegexpConverterPairs []common.RegexpNamePair = append(
+	compute.AssetNameRegexpConverterPairs,
+	resourcemanager.AssetNameRegexpConverterPairs...,
+)
 
 var allConverterMaps = []map[string]common.Converter{
 	compute.ConverterMap,
 	resourcemanager.ConverterMap,
 }
 
-var ConverterNames = joinConverterNames(allConverterNames)
+var ConverterNamesPerAssetType = joinConverterNames(allConverterNamesPerAssetType)
+var ConverterNamesPerAssetNameRegex = joinConverterNames(allConverterNamesPerAssetType)
 var ConverterMap = joinConverterMaps(allConverterMaps)
 
 func joinConverterNames(arr []map[string]string) map[string]string {
