@@ -25,7 +25,7 @@ func TestComputeHealthCheck(t *testing.T) {
 
 	cai2hcl_testing.AssertTestFiles(
 		t,
-		ConverterNamesPerAssetType, AssetNameRegexpConverterPairs, ConverterMap,
+		Converter,
 		"./testdata",
 		[]string{testFileName})
 }

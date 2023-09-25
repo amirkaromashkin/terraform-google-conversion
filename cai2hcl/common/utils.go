@@ -56,37 +56,6 @@ func MapToCtyValWithSchema(m map[string]interface{}, s map[string]*schema.Schema
 	return ret, nil
 }
 
-// func MapToCtyValWithSchema(m map[string]interface{}, s map[string]*schema.Schema) (cty.Value, error) {
-// 	// Normalize non-marshable properties manually.
-// 	m = normalizeFlattenedMap(m, s).(map[string]interface{})
-
-// 	b, err := json.Marshal(&m)
-// 	if err != nil {
-// 		return cty.NilVal, fmt.Errorf("error marshaling map as JSON: %v", err)
-// 	}
-
-// 	ctyImpliedType, err := ctyjson.ImpliedType(b)
-// 	if err != nil {
-// 		return cty.NilVal, err
-// 	}
-
-// 	ctyImpliedVal, err := ctyjson.Unmarshal(b, ctyImpliedType)
-// 	// if err != nil {
-// 	// 	return cty.NilVal, err
-// 	// }
-
-// 	// ty, err := hashicorpCtyTypeToZclconfCtyType(schema.InternalMap(s).CoreConfigSchema().ImpliedType())
-// 	// if err != nil {
-// 	// 	return cty.NilVal, fmt.Errorf("error casting type: %v", err)
-// 	// }
-// 	// ret, err := ctyconvert.Convert(ctyImpliedVal, ty)
-// 	// // ret, err := ctyjson.Unmarshal(b, ty)
-// 	// if err != nil {
-// 	// 	return cty.NilVal, fmt.Errorf("error unmarshaling JSON as cty.Value: %v", err)
-// 	// }
-// 	// return ret, nil
-// }
-
 func NewConfig() *tpg_transport.Config {
 	// Currently its not needed, but it may change in future.
 	return &tpg_transport.Config{}

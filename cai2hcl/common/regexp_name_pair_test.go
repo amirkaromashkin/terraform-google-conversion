@@ -12,19 +12,19 @@ func TestFindMatchingConverterName(t *testing.T) {
 		{AssetNameRegexp: "projects/(?P<project>[^/]+)/global/forwardingRules", ConverterName: "compute_global_forwarding_rule"},
 	}
 
-	name, ok := findMatchingConverterName("//compute.googleapis.com/projects/myproj/regions/us-central1/forwardingRules/test-1", assetNameRegexpConverterPairs)
+	name, ok := FindMatchingConverterName("//compute.googleapis.com/projects/myproj/regions/us-central1/forwardingRules/test-1", assetNameRegexpConverterPairs)
 	assert.True(t, ok)
 	assert.Equal(t, name, "google_compute_forwarding_rule")
 
-	name, ok = findMatchingConverterName("projects/myproj/regions/us-central1/forwardingRules/test-1", assetNameRegexpConverterPairs)
+	name, ok = FindMatchingConverterName("projects/myproj/regions/us-central1/forwardingRules/test-1", assetNameRegexpConverterPairs)
 	assert.True(t, ok)
 	assert.Equal(t, name, "google_compute_forwarding_rule")
 
-	name, ok = findMatchingConverterName("//compute.googleapis.com/projects/myproj/global/forwardingRules/fr", assetNameRegexpConverterPairs)
+	name, ok = FindMatchingConverterName("//compute.googleapis.com/projects/myproj/global/forwardingRules/fr", assetNameRegexpConverterPairs)
 	assert.True(t, ok)
 	assert.Equal(t, name, "compute_global_forwarding_rule")
 
-	name, ok = findMatchingConverterName("projects/myproj/global/forwardingRules/fr", assetNameRegexpConverterPairs)
+	name, ok = FindMatchingConverterName("projects/myproj/global/forwardingRules/fr", assetNameRegexpConverterPairs)
 	assert.True(t, ok)
 	assert.Equal(t, name, "compute_global_forwarding_rule")
 }
