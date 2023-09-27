@@ -1,7 +1,7 @@
 [
     {
         "name": "//compute.googleapis.com/projects/myproj/global/forwardingRules/fr",
-        "asset_type": "compute.googleapis.com/GlobalForwardingRule",
+        "asset_type": "compute.googleapis.com/ForwardingRule",
         "ancestry_path": "organizations/123/folders/456/project/myproj",
         "resource": {
             "version": "v1",

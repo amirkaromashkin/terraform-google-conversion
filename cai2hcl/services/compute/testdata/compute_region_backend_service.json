@@ -1,7 +1,7 @@
 [
     {
         "name": "//compute.googleapis.com/projects/myproj/regions/us-central1/backendServices/bs-1",
-        "asset_type": "compute.googleapis.com/RegionBackendService",
+        "asset_type": "compute.googleapis.com/BackendService",
         "ancestry_path": "organizations/123/folders/456/project/myproj",
         "resource": {
             "version": "v1",
