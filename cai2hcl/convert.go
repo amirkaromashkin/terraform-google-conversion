@@ -22,7 +22,7 @@ func Convert(assets []*caiasset.Asset, options *Options) ([]byte, error) {
 		return nil, fmt.Errorf("logger is not initialized")
 	}
 
-	servicesConverter := services.Converter
+	servicesConverter := services.UberConverter
 
 	blocks, err := servicesConverter.Convert(assets)
 	if err != nil {

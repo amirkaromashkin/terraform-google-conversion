@@ -15,11 +15,12 @@ var backendServiceMatchers = []matchers.ConverterMatcher{
 	matchers.ByAssetName(ComputeBackendServiceAssetNameRegex, "google_compute_backend_service"),
 }
 
-var Converter = common.UberConverter{
+var UberConverter = common.UberConverter{
+	ConverterByAssetType: map[string]string{
+		ComputeInstanceAssetType:    "google_compute_instance",
+		ComputeHealthCheckAssetType: "google_compute_health_check",
+	},
 	ConverterMatchersByAssetType: map[string][]matchers.ConverterMatcher{
-		ComputeInstanceAssetType:    {matchers.Always("google_compute_instance")},
-		ComputeHealthCheckAssetType: {matchers.Always("google_compute_health_check")},
-
 		ComputeForwardingRuleAssetType:       forwardingRuleMatchers,
 		ComputeGlobalForwardingRuleAssetType: forwardingRuleMatchers,
 

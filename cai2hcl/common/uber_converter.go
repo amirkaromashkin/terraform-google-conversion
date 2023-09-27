@@ -24,12 +24,15 @@ func (c UberConverter) Convert(assets []*caiasset.Asset) ([]*HCLResourceBlock, e
 	// tf -> cai has 1:N mappings occasionally
 	groups := make(map[string][]*caiasset.Asset)
 	for _, asset := range assets {
-		matchers, _ := c.ConverterMatchersByAssetType[asset.Type]
 
-		var name string
-		for _, matcher := range matchers {
-			if matcher.Match(asset) {
-				name = matcher.GetConverterName()
+		name, found := c.ConverterByAssetType[asset.Type]
+		if !found {
+			matchers, _ := c.ConverterMatchersByAssetType[asset.Type]
+
+			for _, matcher := range matchers {
+				if matcher.Match(asset) {
+					name = matcher.GetConverterName()
+				}
 			}
 		}
 

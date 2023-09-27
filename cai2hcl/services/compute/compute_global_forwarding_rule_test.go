@@ -25,7 +25,7 @@ func TestComputeGlobalForwardingRule(t *testing.T) {
 
 	cai2hcl_testing.AssertTestFiles(
 		t,
-		Converter,
+		UberConverter,
 		"./testdata",
 		[]string{testFileName})
 }

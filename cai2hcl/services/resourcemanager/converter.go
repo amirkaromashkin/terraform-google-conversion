@@ -4,7 +4,7 @@ import (
 	"github.com/GoogleCloudPlatform/terraform-google-conversion/v2/cai2hcl/common"
 )
 
-var Converter = common.UberConverter{
+var UberConverter = common.UberConverter{
 	ConverterByAssetType: map[string]string{
 		ProjectAssetType:        "google_project",
 		ProjectBillingAssetType: "google_project",

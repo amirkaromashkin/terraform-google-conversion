@@ -6,13 +6,13 @@ import (
 	"github.com/GoogleCloudPlatform/terraform-google-conversion/v2/caiasset"
 )
 
-func ByAssetName(converterName string, regexp string) ConverterMatcher {
-	return _AssetNameMatcher{ConverterName: converterName, Regexp: regexp}
+func ByAssetName(regexp string, converterName string) ConverterMatcher {
+	return _AssetNameMatcher{Regexp: regexp, ConverterName: converterName}
 }
 
 type _AssetNameMatcher struct {
-	ConverterName string
 	Regexp        string
+	ConverterName string
 }
 
 func (inst _AssetNameMatcher) Match(asset *caiasset.Asset) bool {

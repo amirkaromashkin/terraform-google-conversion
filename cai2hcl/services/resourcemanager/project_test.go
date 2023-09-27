@@ -9,7 +9,7 @@ import (
 func TestComputeInstance(t *testing.T) {
 	cai2hclTesting.AssertTestFiles(
 		t,
-		Converter,
+		UberConverter,
 		"./testdata",
 		[]string{
 			"project_create",
