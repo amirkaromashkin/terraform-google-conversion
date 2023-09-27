@@ -1,49 +1,32 @@
 package services
 
 import (
+	"fmt"
+
 	"github.com/GoogleCloudPlatform/terraform-google-conversion/v2/cai2hcl/common"
 	"github.com/GoogleCloudPlatform/terraform-google-conversion/v2/cai2hcl/services/compute"
 	"github.com/GoogleCloudPlatform/terraform-google-conversion/v2/cai2hcl/services/resourcemanager"
 )
 
-var Converter = common.UberConverter{
-	ConverterNamesPerAssetType: joinStringMaps([]map[string]string{
-		compute.Converter.ConverterNamesPerAssetType,
-		resourcemanager.Converter.ConverterNamesPerAssetType,
-	}),
-	AssetNameRegexpConverterPairs: append(
-		compute.Converter.AssetNameRegexpConverterPairs,
-		resourcemanager.Converter.AssetNameRegexpConverterPairs...,
-	),
-	ConverterMap: joinConverterMaps([]map[string]common.Converter{
-		compute.Converter.ConverterMap,
-		resourcemanager.Converter.ConverterMap,
-	}),
+var UberConverter = common.UberConverter{
+	ConverterMatchersByAssetType: joinMaps(
+		compute.Converter.ConverterMatchersByAssetType,
+		resourcemanager.Converter.ConverterMatchersByAssetType),
+	ConverterByAssetType: joinMaps(
+		compute.Converter.ConverterByAssetType,
+		resourcemanager.Converter.ConverterByAssetType),
+	Converters: joinMaps(
+		compute.Converter.Converters,
+		resourcemanager.Converter.Converters),
 }
 
-func joinStringMaps(arr []map[string]string) map[string]string {
-	result := make(map[string]string)
+func joinMaps[V interface{}](arr ...map[string]V) map[string]V {
+	result := make(map[string]V)
 
 	for _, m := range arr {
 		for key, value := range m {
 			if _, hasKey := result[key]; hasKey {
-				panic("Converters from different services are not unique")
-			}
-
-			result[key] = value
-		}
-	}
-
-	return result
-}
-
-func joinConverterMaps(arr []map[string]common.Converter) map[string]common.Converter {
-	result := make(map[string]common.Converter)
-
-	for _, m := range arr {
-		for key, value := range m {
-			if _, hasKey := result[key]; hasKey {
-				panic("Converters from different services are not unique")
+				panic(fmt.Sprintf("Map keys are not unique. Duplicate: %s", key))
 			}
 
 			result[key] = value
