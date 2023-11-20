@@ -26,4 +26,4 @@ git tag "v${version}"
 git push origin "v${version}"
 echo "Github tag v${version} created"
 
-echo "Create a new release by visiting https://github.com/GoogleCloudPlatform/terraform-google-conversion/releases/new?tag=v${version}&title=v${version}"
+echo "Create a new release by visiting https://github.com/amirkaromashkin/terraform-google-conversion/releases/new?tag=v${version}&title=v${version}"
