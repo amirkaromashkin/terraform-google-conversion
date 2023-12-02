@@ -6,8 +6,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/GoogleCloudPlatform/terraform-google-conversion/v5/cai2hcl/common"
-	"github.com/GoogleCloudPlatform/terraform-google-conversion/v5/caiasset"
+	"github.com/amirkaromashkin/terraform-google-conversion/v5/cai2hcl/common"
+	"github.com/amirkaromashkin/terraform-google-conversion/v5/caiasset"
 	"go.uber.org/zap"
 
 	"github.com/google/go-cmp/cmp"

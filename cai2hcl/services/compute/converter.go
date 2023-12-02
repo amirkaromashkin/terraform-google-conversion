@@ -1,8 +1,8 @@
 package compute
 
 import (
-	"github.com/GoogleCloudPlatform/terraform-google-conversion/v5/cai2hcl/common"
-	"github.com/GoogleCloudPlatform/terraform-google-conversion/v5/cai2hcl/common/matchers"
+	"github.com/amirkaromashkin/terraform-google-conversion/v5/cai2hcl/common"
+	"github.com/amirkaromashkin/terraform-google-conversion/v5/cai2hcl/common/matchers"
 )
 
 var forwardingRuleMatchers = []matchers.ConverterMatcher{

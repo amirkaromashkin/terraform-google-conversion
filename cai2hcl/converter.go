@@ -3,10 +3,10 @@ package cai2hcl
 import (
 	"fmt"
 
-	"github.com/GoogleCloudPlatform/terraform-google-conversion/v5/caiasset"
+	"github.com/amirkaromashkin/terraform-google-conversion/v5/caiasset"
 
-	"github.com/GoogleCloudPlatform/terraform-google-conversion/v5/cai2hcl/common"
-	"github.com/GoogleCloudPlatform/terraform-google-conversion/v5/cai2hcl/services"
+	"github.com/amirkaromashkin/terraform-google-conversion/v5/cai2hcl/common"
+	"github.com/amirkaromashkin/terraform-google-conversion/v5/cai2hcl/services"
 	"go.uber.org/zap"
 )
 

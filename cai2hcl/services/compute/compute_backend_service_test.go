@@ -17,7 +17,7 @@ package compute
 import (
 	"testing"
 
-	cai2hcl_testing "github.com/GoogleCloudPlatform/terraform-google-conversion/v5/cai2hcl/testing"
+	cai2hcl_testing "github.com/amirkaromashkin/terraform-google-conversion/v5/cai2hcl/testing"
 )
 
 func TestComputeBackendService(t *testing.T) {

@@ -3,7 +3,7 @@ package matchers
 import (
 	"regexp"
 
-	"github.com/GoogleCloudPlatform/terraform-google-conversion/v5/caiasset"
+	"github.com/amirkaromashkin/terraform-google-conversion/v5/caiasset"
 )
 
 func ByAssetName(regexp string, converterName string) ConverterMatcher {
