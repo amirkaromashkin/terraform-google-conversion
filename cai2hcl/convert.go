@@ -16,7 +16,7 @@ type Options struct {
 }
 
 var converters = GetConverters()
-var converterMapByAssetType = getConverterMapByAssetType()
+var convertersByAssetType = getConvertersByAssetType()
 
 // Converts CAI Assets into HCL string.
 func Convert(assets []*caiasset.Asset, options *Options) ([]byte, error) {
@@ -24,16 +24,16 @@ func Convert(assets []*caiasset.Asset, options *Options) ([]byte, error) {
 		return nil, fmt.Errorf("logger is not initialized")
 	}
 
-	convertersMap := make(map[string]common.Converter)
+	convertersByTerraformResourceType := make(map[string]common.Converter)
 	for _, converter := range converters {
-		convertersMap[converter.GetTerraformResourceType()] = converter
+		convertersByTerraformResourceType[converter.GetTerraformResourceType()] = converter
 	}
 
 	// Group resources from the same tf resource type for convert.
 	// tf -> cai has 1:N mappings occasionally
 	groups := make(map[string][]*caiasset.Asset)
 	for _, asset := range assets {
-		for _, converter := range converterMapByAssetType[asset.Type] {
+		for _, converter := range convertersByAssetType[asset.Type] {
 			name := converter.GetTerraformResourceType()
 
 			groups[name] = append(groups[name], asset)
@@ -42,7 +42,7 @@ func Convert(assets []*caiasset.Asset, options *Options) ([]byte, error) {
 
 	allBlocks := []*common.HCLResourceBlock{}
 	for name, assets := range groups {
-		converter, ok := convertersMap[name]
+		converter, ok := convertersByTerraformResourceType[name]
 		if !ok {
 			continue
 		}
@@ -61,12 +61,12 @@ func Convert(assets []*caiasset.Asset, options *Options) ([]byte, error) {
 	return t, err
 }
 
-func getConverterMapByAssetType() map[string][]common.Converter {
-	var converterMapByAssetType = make(map[string][]common.Converter)
+func getConvertersByAssetType() map[string][]common.Converter {
+	var convertersByAssetType = make(map[string][]common.Converter)
 	for _, converter := range converters {
 		for _, assetType := range converter.GetAssetTypes() {
-			converterMapByAssetType[assetType] = append(converterMapByAssetType[assetType], converter)
+			convertersByAssetType[assetType] = append(convertersByAssetType[assetType], converter)
 		}
 	}
-	return converterMapByAssetType
+	return convertersByAssetType
 }
