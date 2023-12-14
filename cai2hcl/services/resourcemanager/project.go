@@ -21,18 +21,30 @@ const ProjectBillingAssetType string = "cloudbilling.googleapis.com/ProjectBilli
 
 // ProjectConverter for compute project resource.
 type ProjectConverter struct {
-	name     string
-	schema   map[string]*tfschema.Schema
-	billings map[string]string
+	name       string
+	assetTypes []string
+	schema     map[string]*tfschema.Schema
+	billings   map[string]string
 }
 
 // NewProjectConverter returns an HCL converter for compute project.
-func NewProjectConverter(name string, schema map[string]*tfschema.Schema) common.Converter {
+func NewProjectConverter(provider *tfschema.Provider) common.Converter {
+	name := "google_project"
+	schema := provider.ResourcesMap[name].Schema
+
 	return &ProjectConverter{
-		name:     name,
-		schema:   schema,
-		billings: make(map[string]string),
+		name:       name,
+		assetTypes: []string{ProjectAssetType, ProjectBillingAssetType},
+		schema:     schema,
+		billings:   make(map[string]string),
 	}
+}
+
+func (c *ProjectConverter) GetAssetTypes() []string {
+	return c.assetTypes
+}
+func (c *ProjectConverter) GetTerraformResourceType() string {
+	return c.name
 }
 
 // Convert converts asset resource data.

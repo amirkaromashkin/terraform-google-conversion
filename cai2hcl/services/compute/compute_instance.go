@@ -12,21 +12,30 @@ import (
 	"google.golang.org/api/compute/v1"
 )
 
-// ComputeInstanceAssetType is the CAI asset type name for compute instance.
-const ComputeInstanceAssetType string = "compute.googleapis.com/Instance"
-
 // ComputeInstanceConverter for compute instance resource.
 type ComputeInstanceConverter struct {
-	name   string
-	schema map[string]*tfschema.Schema
+	name       string
+	schema     map[string]*tfschema.Schema
+	assetTypes []string
 }
 
 // NewComputeInstanceConverter returns an HCL converter for compute instance.
-func NewComputeInstanceConverter(name string, schema map[string]*tfschema.Schema) common.Converter {
+func NewComputeInstanceConverter(provider *tfschema.Provider) common.Converter {
+	name := "google_compute_instance"
+	schema := provider.ResourcesMap[name].Schema
+
 	return &ComputeInstanceConverter{
-		name:   name,
-		schema: schema,
+		name:       name,
+		schema:     schema,
+		assetTypes: []string{"compute.googleapis.com/Instance"},
 	}
+}
+
+func (c *ComputeInstanceConverter) GetAssetTypes() []string {
+	return c.assetTypes
+}
+func (c *ComputeInstanceConverter) GetTerraformResourceType() string {
+	return c.name
 }
 
 // Convert converts asset to HCL resource blocks.
