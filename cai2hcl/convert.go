@@ -15,8 +15,8 @@ type Options struct {
 	ErrorLogger *zap.Logger
 }
 
-var converters []common.Converter
-var ConverterMapByAssetType map[string][]common.Converter
+var converters = GetConverters()
+var converterMapByAssetType = getConverterMapByAssetType()
 
 // Converts CAI Assets into HCL string.
 func Convert(assets []*caiasset.Asset, options *Options) ([]byte, error) {
@@ -33,13 +33,12 @@ func Convert(assets []*caiasset.Asset, options *Options) ([]byte, error) {
 	// tf -> cai has 1:N mappings occasionally
 	groups := make(map[string][]*caiasset.Asset)
 	for _, asset := range assets {
-		for _, converter := range ConverterMapByAssetType[asset.Type] {
+		for _, converter := range converterMapByAssetType[asset.Type] {
 			name := converter.GetTerraformResourceType()
 
 			groups[name] = append(groups[name], asset)
 		}
 	}
-	fmt.Println("groups", groups)
 
 	allBlocks := []*common.HCLResourceBlock{}
 	for name, assets := range groups {
@@ -62,15 +61,12 @@ func Convert(assets []*caiasset.Asset, options *Options) ([]byte, error) {
 	return t, err
 }
 
-func init() {
-	converters = GetConverters()
-	ConverterMapByAssetType = make(map[string][]common.Converter)
+func getConverterMapByAssetType() map[string][]common.Converter {
+	var converterMapByAssetType = make(map[string][]common.Converter)
 	for _, converter := range converters {
 		for _, assetType := range converter.GetAssetTypes() {
-			ConverterMapByAssetType[assetType] = append(ConverterMapByAssetType[assetType], converter)
+			converterMapByAssetType[assetType] = append(converterMapByAssetType[assetType], converter)
 		}
 	}
-
-	fmt.Println("ConverterMapByAssetType init", ConverterMapByAssetType)
-
+	return converterMapByAssetType
 }

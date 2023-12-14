@@ -15,11 +15,8 @@ func GetConverters() []common.Converter {
 	provider = tpg_provider.Provider()
 
 	return []common.Converter{
-		// Compute
 		compute.NewComputeInstanceConverter(provider),
 		compute.NewComputeForwardingRuleConverter(provider),
-
-		// ResourceManager
 		resourcemanager.NewProjectConverter(provider),
 	}
 }
