@@ -6,13 +6,13 @@ resource "google_project" "example-project-1" {
     project-label-key-a = "project-label-val-a"
   }
 
-  name       = "My Project"
+  name       = "My Project 1"
   project_id = "example-project-1"
 }
 
 resource "google_project" "example-project-2" {
   billing_account = "example-account-2"
-  folder_id       = "456"
+  folder_id       = "910"
 
   labels = {
     project-label-key-a = "project-label-val-a"
