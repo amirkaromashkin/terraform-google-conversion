@@ -1,24 +1,24 @@
 [
   {
-    "name": "//cloudbilling.googleapis.com/projects/example-project/billingInfo",
+    "name": "//cloudbilling.googleapis.com/projects/example-project-1/billingInfo",
     "asset_type": "cloudbilling.googleapis.com/ProjectBillingInfo",
-    "ancestry_path": "organizations/123/folders/456/project/example-project",
+    "ancestry_path": "organizations/123/folders/456/project/example-project-1",
     "resource": {
       "version": "v1",
       "discovery_document_uri": "https://www.googleapis.com/discovery/v1/apis/cloudbilling/v1/rest",
       "discovery_name": "ProjectBillingInfo",
-      "parent": "//cloudresourcemanager.googleapis.com/projects/example-project",
+      "parent": "//cloudresourcemanager.googleapis.com/projects/example-project-1",
       "data": {
-        "billingAccountName": "billingAccounts/example-account",
-        "name": "projects/example-project/billingInfo",
-        "projectId": "example-project"
+        "billingAccountName": "billingAccounts/example-account-1",
+        "name": "projects/example-project-1/billingInfo",
+        "projectId": "example-project-1"
       }
     }
   },
   {
-    "name": "//cloudresourcemanager.googleapis.com/projects/example-project",
+    "name": "//cloudresourcemanager.googleapis.com/projects/example-project-1",
     "asset_type": "cloudresourcemanager.googleapis.com/Project",
-    "ancestry_path": "organizations/123/folders/456/project/example-project",
+    "ancestry_path": "organizations/123/folders/456/project/example-project-1",
     "resource": {
       "version": "v1",
       "discovery_document_uri": "https://www.googleapis.com/discovery/v1/apis/compute/v1/rest",
@@ -29,7 +29,41 @@
         "labels": {
           "project-label-key-a": "project-label-val-a"
         },
-        "projectId": "example-project"
+        "projectId": "example-project-1"
+      }
+    }
+  },
+  {
+    "name": "//cloudbilling.googleapis.com/projects/example-project-2/billingInfo",
+    "asset_type": "cloudbilling.googleapis.com/ProjectBillingInfo",
+    "ancestry_path": "organizations/123/folders/456/project/example-project-2",
+    "resource": {
+      "version": "v1",
+      "discovery_document_uri": "https://www.googleapis.com/discovery/v1/apis/cloudbilling/v1/rest",
+      "discovery_name": "ProjectBillingInfo",
+      "parent": "//cloudresourcemanager.googleapis.com/projects/example-project-2",
+      "data": {
+        "billingAccountName": "billingAccounts/example-account-2",
+        "name": "projects/example-project-2/billingInfo",
+        "projectId": "example-project-2"
+      }
+    }
+  },
+  {
+    "name": "//cloudresourcemanager.googleapis.com/projects/example-project-2",
+    "asset_type": "cloudresourcemanager.googleapis.com/Project",
+    "ancestry_path": "organizations/123/folders/456/project/example-project-2",
+    "resource": {
+      "version": "v1",
+      "discovery_document_uri": "https://www.googleapis.com/discovery/v1/apis/compute/v1/rest",
+      "discovery_name": "Project",
+      "parent": "//cloudresourcemanager.googleapis.com/folders/456",
+      "data": {
+        "name": "My Project 2",
+        "labels": {
+          "project-label-key-a": "project-label-val-a"
+        },
+        "projectId": "example-project-2"
       }
     }
   }
