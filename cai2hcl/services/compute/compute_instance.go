@@ -7,35 +7,31 @@ import (
 	"github.com/GoogleCloudPlatform/terraform-google-conversion/v5/caiasset"
 
 	"github.com/GoogleCloudPlatform/terraform-google-conversion/v5/cai2hcl/common"
-	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/zclconf/go-cty/cty"
 	"google.golang.org/api/compute/v1"
 )
 
+// ComputeInstanceAssetType is the CAI asset type name for compute instance.
+const ComputeInstanceAssetType string = "compute.googleapis.com/Instance"
+
+// ComputeInstanceSchemaName is the TF resource schema name for compute instance.
+const ComputeInstanceSchemaName string = "google_compute_instance"
+
 // ComputeInstanceConverter for compute instance resource.
 type ComputeInstanceConverter struct {
-	name       string
-	schema     map[string]*tfschema.Schema
-	assetTypes []string
+	name   string
+	schema map[string]*schema.Schema
 }
 
 // NewComputeInstanceConverter returns an HCL converter for compute instance.
-func NewComputeInstanceConverter(provider *tfschema.Provider) common.Converter {
-	name := "google_compute_instance"
-	schema := provider.ResourcesMap[name].Schema
+func NewComputeInstanceConverter(provider *schema.Provider) common.Converter {
+	schema := provider.ResourcesMap[ComputeInstanceSchemaName].Schema
 
 	return &ComputeInstanceConverter{
-		name:       name,
-		schema:     schema,
-		assetTypes: []string{"compute.googleapis.com/Instance"},
+		name:   ComputeInstanceSchemaName,
+		schema: schema,
 	}
-}
-
-func (c *ComputeInstanceConverter) GetAssetTypes() []string {
-	return c.assetTypes
-}
-func (c *ComputeInstanceConverter) GetTerraformResourceType() string {
-	return c.name
 }
 
 // Convert converts asset to HCL resource blocks.

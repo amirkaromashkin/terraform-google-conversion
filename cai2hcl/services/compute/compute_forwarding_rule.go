@@ -10,19 +10,16 @@ import (
 	computeV1 "google.golang.org/api/compute/v1"
 )
 
+// CAI asset type name.
+const ComputeForwardingRuleAssetType string = "compute.googleapis.com/ForwardingRule"
+
+// TF resource schema name.
+const ComputeForwardingRuleSchemaName string = "google_compute_forwarding_rule"
+
 // ComputeForwardingRuleConverter for regional forwarding rule.
 type ComputeForwardingRuleConverter struct {
-	schema         map[string]*tfschema.Schema
-	name           string
-	assetTypes     []string
-	assetNameRegex string
-}
-
-func (c *ComputeForwardingRuleConverter) GetAssetTypes() []string {
-	return c.assetTypes
-}
-func (c *ComputeForwardingRuleConverter) GetTerraformResourceType() string {
-	return c.name
+	name   string
+	schema map[string]*tfschema.Schema
 }
 
 // Convert converts asset to HCL resource blocks.
@@ -45,14 +42,11 @@ func (c *ComputeForwardingRuleConverter) Convert(assets []*caiasset.Asset) ([]*c
 
 // NewComputeForwardingRuleConverter returns an HCL converter for compute instance.
 func NewComputeForwardingRuleConverter(provider *tfschema.Provider) common.Converter {
-	name := "google_compute_forwarding_rule"
-	schema := provider.ResourcesMap[name].Schema
+	schema := provider.ResourcesMap[ComputeForwardingRuleSchemaName].Schema
 
 	return &ComputeForwardingRuleConverter{
-		schema:         schema,
-		name:           name,
-		assetTypes:     []string{"compute.googleapis.com/ForwardingRule"},
-		assetNameRegex: "projects/(?P<project>[^/]+)/regions/(?P<region>[^/]+)/forwardingRules",
+		name:   ComputeForwardingRuleSchemaName,
+		schema: schema,
 	}
 }
 

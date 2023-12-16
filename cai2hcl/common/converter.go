@@ -7,11 +7,6 @@ import (
 
 // Converter interface for resources.
 type Converter interface {
-	// Assets types, claimed by the converter.
-	GetAssetTypes() []string
-
-	GetTerraformResourceType() string
-
 	// Convert turns assets into hcl blocks.
 	Convert(asset []*caiasset.Asset) ([]*HCLResourceBlock, error)
 }
